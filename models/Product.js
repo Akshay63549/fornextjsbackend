@@ -10,4 +10,7 @@ const ProductSchema = new mongoose.Schema({
     size: {type: String},
     color: {type: String},
 },{timestamps: true});
-module.exports = mongoose.model('Product', ProductSchema);
+// module.exports = mongoose.model('Product', ProductSchema);
+// mongoose.models= {}
+// export default mongoose.model('Product', ProductSchema);
+export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
