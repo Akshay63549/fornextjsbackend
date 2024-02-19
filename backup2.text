@@ -1,0 +1,128 @@
+// import Product from "@/models/Product";
+// import connectDb from "@/middleware/mongoose";
+// import multer from 'multer';
+// const cloudinary = require('cloudinary').v2;
+
+// cloudinary.config({
+//   cloud_name: 'de8e654d7',
+//   api_key: '149298696899376',
+//   api_secret: 'nS-52xghIO9LBnI9U_lE3WHE8PI',
+//   secure: true,
+// });
+
+// const upload = multer({ storage: multer.memoryStorage() });
+
+// const handler = async (req, res) => {
+//   try {
+//     if (req.method === "POST") {
+//       upload.single('image')(req, res, async function (err) {
+//         if (err instanceof multer.MulterError) {
+//           return res.status(500).json({ error: "Multer error occurred" });
+//         } else if (err) {
+//           return res.status(500).json({ error: err.message });
+//         }
+
+//         const folderName = 'Product';
+//         const image = req.file;
+//         const collectionName = 'demo';
+
+//         try {
+//           const result = await cloudinary.uploader.upload(image.path, {
+//             public_id: `${folderName}/_product_${Math.floor(Math.random() * 10)}/${Date.now()}`,
+//             width: 500,
+//             height: 500,
+//             crop: 'fill',
+//             tags: collectionName,
+//           });
+
+//           const uploadedImage = result.secure_url;
+
+//           // Create a new product
+//           const p = new Product({
+//             title: req.body.title,
+//             img: uploadedImage,
+//           });
+
+//           await p.save();
+
+//           res.status(200).json({ success: "Success!", uploadedImage,data: p });
+//         } catch (error) {
+//           console.error("Error uploading image to Cloudinary:", error);
+//           res.status(500).json({ error: "Error uploading image to Cloudinary" });
+//         }
+//       });
+//     } else {
+//       res.status(400).json({ error: "Error! This method is not allowed." });
+//     }
+//   } catch (error) {
+//     console.error("Server error:", error);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
+
+// export default connectDb(handler);
+
+
+import Product from "@/models/Product";
+import connectDb from "@/middleware/mongoose";
+import multer from 'multer';
+const cloudinary = require('cloudinary');
+
+cloudinary.v2.config({
+  cloud_name: 'de8e654d7',
+  api_key: '149298696899376',
+  api_secret: 'nS-52xghIO9LBnI9U_lE3WHE8PI',
+  secure: true,
+});
+const upload = multer({ storage: multer.memoryStorage() });
+
+const handler = async (req, res) => {
+  try {
+    if (req.method === "POST") {
+      upload.single('image')(req, res, async function (err) {
+        if (err instanceof multer.MulterError) {
+          return res.status(500).json({ error: "Multer error occurred" });
+        } else if (err) {
+          console.log(err.message,'error1')
+          return res.status(500).json({ error: err.message });
+        }
+
+        const folderName = 'Product';
+        const image = req.file;
+        const collectionName = 'demo';
+
+        try {
+          const result = await cloudinary.uploader.upload(image.path, {
+            public_id: `${folderName}/_product_${Math.floor(Math.random() * 10)}/${Date.now()}`,
+            width: 500,
+            height: 500,
+            crop: 'fill',
+            tags: collectionName,
+          });
+
+          const uploadedImage = result.secure_url;
+          console.log(uploadedImage,'uploadedImage')
+          // Create a new product
+          const p = new Product({
+            title: req.body.title,
+            img: uploadedImage,
+          });
+
+          await p.save();
+
+          return res.status(200).json({ success: "Success!", data: p });
+        } catch (error) {
+          console.error("Error uploading image to Cloudinary:", error);
+          return res.status(500).json({ error: "Error uploading image to Cloudinary" });
+        }
+      });
+    } else {
+      return res.status(400).json({ error: "Error! This method is not allowed." });
+    }
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export default connectDb(handler);

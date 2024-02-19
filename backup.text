@@ -1,0 +1,48 @@
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import Product from "@/models/Product";
+import connectDb from "@/middleware/mongoose";
+import multer from 'multer';
+// cloudinary.js
+const cloudinary = require('cloudinary');
+
+cloudinary.v2.config({
+  cloud_name: 'de8e654d7',
+  api_key: '149298696899376',
+  api_secret: 'nS-52xghIO9LBnI9U_lE3WHE8PI',
+  secure: true,
+});
+
+
+// Configure multer to use memory storage
+const upload = multer({ storage: multer.memoryStorage() });
+const handler = async (req, res) => {
+// const file = formData.get('image') as File;
+  const folderName = 'Product';
+  const image = req.file.image1
+  const collectionName = 'demo';
+  const uploadedImages = [];
+  // Loop through each uploaded file
+  for (const file of req.files) {
+      const result = await cloudinary.uploader.upload(image, {
+          public_id: `${folderName}/_product_${Math.floor(Math.random() * 10)}/${Date.now()}`,
+          width: 500,
+          height: 500,
+          crop: 'fill',
+          tags: collectionName,
+      });
+
+      uploadedImages.push(result.secure_url);
+  }
+  if (req.method == "POST") {
+      let p = new Product({
+        title: req.body.title,
+        img:uploadedImages
+      });
+      await p.save();
+    res.status(200).json({ success: "success!",data:p });
+  } else {
+    res.status(400).json({ error: "error! This method is not allowed." });
+  }
+};
+export default connectDb(handler);
+
